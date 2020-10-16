@@ -2,7 +2,7 @@ import { Map } from './Map';
 import { Room } from './Room';
 import { constants } from '../../util';
 
-const { WALL } = constants.MAP_ELEMENTS;
+const { WALL, FLOOR } = constants.MAP_ELEMENTS;
 
 describe('getRoomWallHashMap', () => {
   it('creates hash map correctly', () => {
@@ -56,5 +56,46 @@ describe('getRoomWallHashMap', () => {
 
     expect(map.getRoomWallHashMap())
       .toEqual(hashMap);
+  });
+});
+
+describe('get2DArray', () => {
+  it('works', () => {
+    const W = WALL;
+    const F = FLOOR;
+
+    const rooms = [
+      new Room({
+        topLeft: { x: 2, y: 1 },
+        width: 5,
+        height: 4,
+      }),
+      new Room({
+        topLeft: { x: 8, y: 3 },
+        width: 4,
+        height: 4,
+      }),
+    ];
+
+    const map = new Map({
+      rooms,
+      width: 14,
+      height: 9,
+    });
+
+    const expectedArray = [
+      [F, F, F, F, F, F, F, F, F, F, F, F, F, F],
+      [F, F, W, W, W, W, W, F, F, F, F, F, F, F],
+      [F, F, W, F, F, F, W, F, F, F, F, F, F, F],
+      [F, F, W, F, F, F, W, F, W, W, W, W, F, F],
+      [F, F, W, W, W, W, W, F, W, F, F, W, F, F],
+      [F, F, F, F, F, F, F, F, W, F, F, W, F, F],
+      [F, F, F, F, F, F, F, F, W, W, W, W, F, F],
+      [F, F, F, F, F, F, F, F, F, F, F, F, F, F],
+      [F, F, F, F, F, F, F, F, F, F, F, F, F, F],
+    ];
+
+    expect(map.get2DArray())
+      .toEqual(expectedArray);
   });
 });
