@@ -31,24 +31,28 @@ const getRandomRooms = ({
   }
 
   for (let i = 0; i < _nRooms; i++) {
-    const topLeftX = random.integer(0, mapWidth - 1);
-    const topLeftY = random.integer(0, mapHeight - 1);
-    const topLeft = {
-      x: topLeftX,
-      y: topLeftY,
-    };
+    let room: Room | null = null;
 
-    const roomWidth = random.integer(MIN_ROOM_DIM, MAX_ROOM_DIM);
-    const roomHeight = random.integer(MIN_ROOM_DIM, MAX_ROOM_DIM);
+    while (!room
+      || room.bottomRight.x >= mapWidth
+      || room.bottomRight.y >= mapHeight
+      || rooms.some(listRoom => room!.overlapsWith(listRoom))
+    ) {
+      const topLeftX = random.integer(0, mapWidth - 1);
+      const topLeftY = random.integer(0, mapHeight - 1);
+      const topLeft = {
+        x: topLeftX,
+        y: topLeftY,
+      };
 
-    const room = new Room({
-      topLeft,
-      width: roomWidth,
-      height: roomHeight,
-    });
+      const roomWidth = random.integer(MIN_ROOM_DIM, MAX_ROOM_DIM);
+      const roomHeight = random.integer(MIN_ROOM_DIM, MAX_ROOM_DIM);
 
-    if (rooms.some(listRoom => room.overlapsWith(listRoom))) {
-      continue;
+      room = new Room({
+        topLeft,
+        width: roomWidth,
+        height: roomHeight,
+      });
     }
 
     rooms.push(room);
@@ -72,5 +76,9 @@ export const generateRandomMap = ({
     nRooms,
   });
 
-  return new Map(rooms);
+  return new Map({
+    rooms,
+    width: mapWidth,
+    height: mapHeight,
+  });
 };

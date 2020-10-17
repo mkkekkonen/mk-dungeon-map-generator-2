@@ -1,16 +1,30 @@
 {
-    "parser": "@typescript-eslint/parser",
-    "extends": [
-        "eslint:recommended",
-        "plugin:@typescript-eslint/eslint-recommended",
-        "plugin:@typescript-eslint/recommended"
-    ],
-    "parserOptions": {
-        "ecmaVersion": 2018,
-        "sourceType": "module"
+    "extends": "eslint:recommended",
+    "env": {
+        "node": true,
+        "es6": true
     },
-    "rules": {
-        "semi": "error",
-        "quotes": [2, "single"]
-    }
+    "parserOptions": {
+        "ecmaVersion": 2018
+    },
+    "overrides": [
+        {
+            "files": ["*.ts"],
+            "parser": "@typescript-eslint/parser",
+            "extends": [
+                "eslint:recommended",
+                "plugin:@typescript-eslint/eslint-recommended",
+                "plugin:@typescript-eslint/recommended"
+            ],
+            "parserOptions": {
+                "ecmaVersion": 2018,
+                "sourceType": "module"
+            },
+            "rules": {
+                "quotes": [2, "single"],
+                "semi": "error",
+                "@typescript-eslint/no-non-null-assertion": "off"
+            }
+        }
+    ]
 }
