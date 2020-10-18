@@ -1,8 +1,9 @@
 import { Random } from 'random-js';
 
-import { Map, Room } from '../map';
-import { ICoords } from '../../util';
+import { Door, Map, Room, Side } from '../map';
+import { shuffle } from '../../util';
 import { MIN_ROOM_DIM, MAX_ROOM_DIM } from '../../util/constants';
+import { nthRoot } from 'mathjs';
 
 interface IGeneratorOptions {
   nRooms?: number
@@ -13,6 +14,32 @@ interface IGeneratorOptions {
   minRooms?: number
   maxRooms?: number
 }
+
+export const getMaxDistanceNW = (room: Room, side: Side): number => {
+  if ([Side.North, Side.South].includes(side)) {
+    return room.width - 2;
+  }
+
+  if ([Side.East, Side.West].includes(side)) {
+    return room.height - 2;
+  }
+
+  return 0;
+};
+
+const generateRoomDoors = (random: Random, room: Room) => {
+  const nDoors = random.integer(1, 4);
+
+  const sides = shuffle([Side.North, Side.East, Side.South, Side.West])
+    .slice(0, nDoors) as Side[];
+
+  sides.forEach(side => {
+    const maxDistanceNW = getMaxDistanceNW(room, side);
+    const distanceNW = random.integer(1, maxDistanceNW);
+    const door = new Door(room, side, distanceNW);
+    room.doors.push(door);
+  });
+};
 
 const getRandomRooms = ({
   nRooms,
@@ -56,6 +83,7 @@ const getRandomRooms = ({
     }
 
     rooms.push(room);
+    generateRoomDoors(random, room);
   }
 
   return rooms;

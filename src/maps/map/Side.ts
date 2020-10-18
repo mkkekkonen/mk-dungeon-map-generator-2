@@ -1,7 +1,7 @@
 export enum Side {
   None,
-  Top,
-  Right,
-  Bottom,
-  Left
+  North,
+  East,
+  South,
+  West,
 }

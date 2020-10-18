@@ -5,4 +5,5 @@ export const MAP_ELEMENTS = {
   NONE: 0,
   FLOOR: 1,
   WALL: 2,
+  DOOR: 3,
 };

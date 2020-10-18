@@ -1,8 +1,11 @@
 import { Map } from './Map';
 import { Room } from './Room';
+import { Door } from './Door';
+import { Side } from './Side';
+
 import { constants } from '../../util';
 
-const { WALL, FLOOR } = constants.MAP_ELEMENTS;
+const { WALL, FLOOR, DOOR } = constants.MAP_ELEMENTS;
 
 describe('getRoomWallHashMap', () => {
   it('creates hash map correctly', () => {
@@ -54,7 +57,7 @@ describe('getRoomWallHashMap', () => {
       '11:6': WALL,
     };
 
-    expect(map.getRoomWallHashMap())
+    expect(map.getRoomHashMap())
       .toEqual(hashMap);
   });
 });
@@ -63,6 +66,7 @@ describe('get2DArray', () => {
   it('works', () => {
     const W = WALL;
     const F = FLOOR;
+    const D = DOOR;
 
     const rooms = [
       new Room({
@@ -77,6 +81,9 @@ describe('get2DArray', () => {
       }),
     ];
 
+    rooms[0].doors.push(new Door(rooms[0], Side.South, 2));
+    rooms[1].doors.push(new Door(rooms[1], Side.West, 1));
+
     const map = new Map({
       rooms,
       width: 14,
@@ -88,7 +95,7 @@ describe('get2DArray', () => {
       [F, F, W, W, W, W, W, F, F, F, F, F, F, F],
       [F, F, W, F, F, F, W, F, F, F, F, F, F, F],
       [F, F, W, F, F, F, W, F, W, W, W, W, F, F],
-      [F, F, W, W, W, W, W, F, W, F, F, W, F, F],
+      [F, F, W, W, D, W, W, F, D, F, F, W, F, F],
       [F, F, F, F, F, F, F, F, W, F, F, W, F, F],
       [F, F, F, F, F, F, F, F, W, W, W, W, F, F],
       [F, F, F, F, F, F, F, F, F, F, F, F, F, F],

@@ -9,11 +9,15 @@ interface IMapOptions {
   rooms: Room[]
 }
 
-type RoomWallCoords = { [key: string]: number };
+type RoomMapCoords = { [key: string]: number };
 
-const { FLOOR, WALL } = constants.MAP_ELEMENTS;
+const {
+  FLOOR,
+  WALL,
+  DOOR,
+} = constants.MAP_ELEMENTS;
 
-const getWallCoordsKey = (x: number, y: number) => `${x}:${y}`;
+const getMapCoordsKey = (x: number, y: number) => `${x}:${y}`;
 
 export class Map {
   width: number;
@@ -32,50 +36,56 @@ export class Map {
     this.rooms = rooms;
   }
 
-  getRoomWallHashMap = (): RoomWallCoords => {
-    const roomWallCoords: RoomWallCoords = {};
+  getRoomHashMap = (): RoomMapCoords => {
+    const roomMapCoords: RoomMapCoords = {};
 
     this.rooms.forEach(room => {
       // N wall
       for (let x = room.topLeft.x; x <= room.bottomRight.x; x++) {
-        const key = getWallCoordsKey(x, room.topLeft.y);
-        roomWallCoords[key] = WALL;
+        const key = getMapCoordsKey(x, room.topLeft.y);
+        roomMapCoords[key] = WALL;
       }
 
       // E wall
       for (let y = room.topLeft.y + 1; y <= room.bottomRight.y - 1; y++) {
-        const key = getWallCoordsKey(room.bottomRight.x, y);
-        roomWallCoords[key] = WALL;
+        const key = getMapCoordsKey(room.bottomRight.x, y);
+        roomMapCoords[key] = WALL;
       }
 
       // S wall
       for (let x = room.topLeft.x; x <= room.bottomRight.x; x++) {
-        const key = getWallCoordsKey(x, room.bottomRight.y);
-        roomWallCoords[key] = WALL;
+        const key = getMapCoordsKey(x, room.bottomRight.y);
+        roomMapCoords[key] = WALL;
       }
 
       // W wall
       for (let y = room.topLeft.y + 1; y <= room.bottomRight.y - 1; y++) {
-        const key = getWallCoordsKey(room.topLeft.x, y);
-        roomWallCoords[key] = WALL;
+        const key = getMapCoordsKey(room.topLeft.x, y);
+        roomMapCoords[key] = WALL;
       }
+
+      room.doors.forEach(door => {
+        const doorCoords = door.coords;
+        const key = getMapCoordsKey(doorCoords.x, doorCoords.y);
+        roomMapCoords[key] = DOOR;
+      });
     });
 
-    return roomWallCoords;
+    return roomMapCoords;
   };
 
   get2DArray = (): number[][] => {
     const array2D: number[][] = [];
 
-    const roomWallHashMap = this.getRoomWallHashMap();
+    const roomHashMap = this.getRoomHashMap();
 
     for (let y = 0; y < this.height; y++) {
       array2D.push([]);
 
       for (let x = 0; x < this.width; x++) {
-        const isWall = roomWallHashMap[getWallCoordsKey(x, y)];
-        if (isWall) {
-          array2D[y].push(WALL);
+        const element = roomHashMap[getMapCoordsKey(x, y)];
+        if (element) {
+          array2D[y].push(element);
         } else {
           array2D[y].push(FLOOR);
         }

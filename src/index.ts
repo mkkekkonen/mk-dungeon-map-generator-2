@@ -1,3 +1,3 @@
-export { Map, MapMatrix, Door, Room } from './maps/map';
+export { Map, MapMatrix, Door, Room, Side } from './maps/map';
 export { Generator } from './maps/generator';
 export { ICoords } from './util';
