@@ -3,7 +3,6 @@ import { Random } from 'random-js';
 import { Door, Map, Room, Side } from '../map';
 import { shuffle } from '../../util';
 import { MIN_ROOM_DIM, MAX_ROOM_DIM } from '../../util/constants';
-import { nthRoot } from 'mathjs';
 
 interface IGeneratorOptions {
   nRooms?: number

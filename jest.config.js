@@ -4,5 +4,7 @@ module.exports = {
     ],
     "transform": {
         "^.+\\.tsx?$": "ts-jest",
+        "\\.tmx$": "jest-raw-loader",
+        "\\.xml$": "jest-raw-loader"
     },
 };

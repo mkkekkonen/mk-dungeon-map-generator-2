@@ -1,4 +1,5 @@
 import { Random } from 'random-js';
+import pako from 'pako';
 
 import * as constants from './constants';
 
@@ -20,6 +21,19 @@ export const shuffle = (arr: any[]): any[] => {
   }
 
   return arrToReturn;
+};
+
+export const initialize2DArray = (width: number, height: number): number[][] =>
+  Array(height).fill(null).map(() => Array(width).fill(0));
+
+export const gunzip = (base64Str: string): Uint32Array => {
+  const strData = atob(base64Str);
+  const charData = strData.split('').map(chr => chr.charCodeAt(0));
+  const binData = new Uint8Array(charData);
+  const data = pako.inflate(binData);
+  const intArr = new Uint32Array(data.buffer);
+
+  return intArr;
 };
 
 export { ICoords } from './Coords';
