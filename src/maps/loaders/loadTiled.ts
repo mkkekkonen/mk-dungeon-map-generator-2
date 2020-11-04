@@ -1,9 +1,34 @@
+import { parse } from 'mathjs';
 import { parseStringPromise } from 'xml2js';
 
 import { initialize2DArray, gunzip } from '../../util';
 
 type TiledOrientation = 'orthogonal' | 'isometric' | 'staggered' | 'hexagonal';
 type TiledRenderOrder = 'right-down' | 'right-up' | 'left-down' | 'left-up';
+type TiledObjDrawOrder = 'index' | 'topdown';
+
+interface ITilesetMeta {
+  source: string
+  firstGid: number
+}
+
+interface ITiledObject {
+  id: number
+
+  name: string
+  type: string
+
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+interface ITiledObjectGroup {
+  id: number
+  drawOrder: TiledObjDrawOrder
+  objects: ITiledObject[]
+}
 
 interface ITiledLayer {
   id: number
@@ -32,9 +57,77 @@ export interface ITiledMap {
   nextLayerId: number
   nextObjectId: number
 
-  tileset: any
+  tilesets?: any[]
   tileLayers: ITiledLayer[]
+  tilesetMeta: ITilesetMeta[]
 }
+
+interface ITiledImage {
+  source: string
+
+  width: number
+  height: number
+}
+
+interface ITiledTile {
+  id: number
+  collision: ITiledObjectGroup
+}
+
+export interface ITiledTileset {
+  firstGid: number
+  sourceFilename: string
+
+  version: string
+  tiledVersion: string
+
+  name: string
+
+  tileWidth: number
+  tileHeight: number
+  tileCount: number
+
+  columns: number
+
+  images: ITiledImage[]
+  tiles: ITiledTile[]
+}
+
+const loadTilesetTiles = (data: any): ITiledTile[] => {
+  return data.map((tileData: any) => {
+    const collisionObjectGroup = tileData.objectgroup[0];
+    const collisionObject = collisionObjectGroup.object[0];
+
+    return {
+      id: +tileData.$.id,
+      collision: {
+        drawOrder: collisionObjectGroup.$.draworder,
+        id: +collisionObjectGroup.$.id,
+        objects: [
+          {
+            id: +collisionObject.$.id,
+            name: collisionObject.$.name,
+            type: collisionObject.$.type,
+            x: +collisionObject.$.x,
+            y: +collisionObject.$.y,
+            width: +collisionObject.$.width,
+            height: +collisionObject.$.height,
+          },
+        ],
+      },
+    };
+  });
+};
+
+const loadTilesetImages = (data: any): ITiledImage[] => {
+  return data.map((imageData: any) => {
+    return {
+      source: imageData.$.source,
+      width: +imageData.$.width,
+      height: +imageData.$.height,
+    };
+  });
+};
 
 const loadTileData = (data: any, mapWidth: number, mapHeight: number) => {
   const tileData = initialize2DArray(mapWidth, mapHeight);
@@ -88,15 +181,39 @@ const loadTileLayers = (layerData: any, mapWidth: number, mapHeight: number, inf
   });
 };
 
-const loadTiledTileset = async (xml: string) => {
-  const tileset = await parseStringPromise(xml);
+export const loadTiledTileset = async (xml: string, sourceFilename: string, firstGid: number): Promise<ITiledTileset | undefined> => {
+  const { tileset: data } = await parseStringPromise(xml);
+
+  try {
+    return {
+      firstGid,
+      sourceFilename,
+      version: data.$.version,
+      tiledVersion: data.$.tiledversion,
+      name: data.$.name,
+      tileWidth: +data.$.tilewidth,
+      tileHeight: +data.$.tileheight,
+      tileCount: +data.$.tilecount,
+      columns: +data.$.columns,
+      images: loadTilesetImages(data.image),
+      tiles: loadTilesetTiles(data.tile),
+    };
+  } catch (e) {
+    console.log(`Invalid tileset data: ${e.message}`);
+  }
+};
+
+const getTilesetMeta = (tilesetData: any): ITilesetMeta[] => {
+  return tilesetData.map((data: any) => ({
+    source: data.$.source,
+    firstGid: +data.$.firstgid,
+  }));
 };
 
 export const loadTiledMap = async (xml: string): Promise<ITiledMap | undefined> => {
   const { map: mapData } = await parseStringPromise(xml);
   
   try {
-    const tilesetSource: string = mapData.tileset.source;
     const tileLayerData: any = mapData.layer;
 
     const width = +mapData.$.width;
@@ -116,8 +233,8 @@ export const loadTiledMap = async (xml: string): Promise<ITiledMap | undefined> 
       infinite,
       nextLayerId: +mapData.$.nextlayerid,
       nextObjectId: +mapData.$.nextobjectid,
-      tileset: {},
       tileLayers: loadTileLayers(tileLayerData, width, height, infinite),
+      tilesetMeta: getTilesetMeta(mapData.tileset),
     };
 
     return map;
