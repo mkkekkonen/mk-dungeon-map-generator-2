@@ -6,4 +6,5 @@ export const MAP_ELEMENTS = {
   FLOOR: 1,
   WALL: 2,
   DOOR: 3,
+  CORRIDOR: 4,
 };

@@ -1,7 +1,7 @@
 import { Map } from '../map';
 import { constants } from '../../util';
 
-const { FLOOR, WALL } = constants.MAP_ELEMENTS;
+const { FLOOR, WALL, DOOR, CORRIDOR } = constants.MAP_ELEMENTS;
 
 export const renderToConsole = (map: Map): void => {
   const array = map.get2DArray();
@@ -18,6 +18,12 @@ export const renderToConsole = (map: Map): void => {
           break;
         case WALL:
           arrayToPrint.push('#');
+          break;
+        case DOOR:
+          arrayToPrint.push('+');
+          break;
+        case CORRIDOR:
+          arrayToPrint.push('$');
           break;
         default:
           break;

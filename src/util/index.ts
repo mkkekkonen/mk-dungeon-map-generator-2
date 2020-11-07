@@ -36,5 +36,5 @@ export const gunzip = (base64Str: string): Uint32Array => {
   return intArr;
 };
 
-export { ICoords } from './Coords';
+export { ICoords, CoordOps } from './Coords';
 export { constants };

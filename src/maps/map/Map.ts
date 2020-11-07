@@ -1,6 +1,6 @@
 import { Room } from './Room';
 import { MapMatrix } from './MapMatrix';
-import { constants } from '../../util';
+import { constants, ICoords } from '../../util';
 import { Door } from './Door';
 
 interface IMapOptions {
@@ -15,6 +15,7 @@ const {
   FLOOR,
   WALL,
   DOOR,
+  CORRIDOR,
 } = constants.MAP_ELEMENTS;
 
 const getMapCoordsKey = (x: number, y: number) => `${x}:${y}`;
@@ -24,6 +25,8 @@ export class Map {
   height: number;
 
   rooms: Room[];
+
+  corridors?: ICoords[][];
 
   constructor({
     width,
@@ -74,6 +77,15 @@ export class Map {
         roomMapCoords[key] = DOOR;
       });
     });
+
+    if (this.corridors) {
+      this.corridors.forEach(corridor => {
+        corridor.forEach(corridorCoords => {
+          const key = getMapCoordsKey(corridorCoords.x, corridorCoords.y);
+          roomMapCoords[key] = CORRIDOR;
+        });
+      });
+    }
 
     return roomMapCoords;
   };

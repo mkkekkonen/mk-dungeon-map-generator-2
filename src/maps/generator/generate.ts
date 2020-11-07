@@ -1,8 +1,17 @@
 import { Random } from 'random-js';
+import PF from 'pathfinding';
+import { flatten } from 'lodash';
 
 import { Door, Map, Room, Side } from '../map';
-import { shuffle } from '../../util';
-import { MIN_ROOM_DIM, MAX_ROOM_DIM } from '../../util/constants';
+import { shuffle, CoordOps, ICoords } from '../../util';
+import { MIN_ROOM_DIM, MAX_ROOM_DIM, MAP_ELEMENTS } from '../../util/constants';
+
+const cardinalCoords: { [key: string]: ICoords } = {
+  north: { x: 0, y: -1 },
+  east: { x: 1, y: 0 },
+  south: { x: 0, y: 1 },
+  west: { x: -1, y: 0 },
+};
 
 interface IGeneratorOptions {
   nRooms?: number
@@ -13,6 +22,113 @@ interface IGeneratorOptions {
   minRooms?: number
   maxRooms?: number
 }
+
+const getAddCoords = (side: Side): ICoords => {
+  switch (side) {
+    case Side.North:
+      return cardinalCoords.north;
+    case Side.East:
+      return cardinalCoords.east;
+    case Side.South:
+      return cardinalCoords.south;
+    case Side.West:
+      return cardinalCoords.west;
+    default:
+      return { x: 0, y: 0 };
+  }
+};
+
+const generateCorridors = (map: Map) => {
+  const random = new Random();
+  const pathfinder = new PF.AStarFinder();
+
+  const corridors: ICoords[][] = [];
+
+  const array = map.get2DArray();
+  const pfArray = array.map(row => row.map(value => {
+    switch (value) {
+      case MAP_ELEMENTS.FLOOR:
+        return 0;
+      default:
+        return 1;
+    }
+  }));
+  const pfGrid = new PF.Grid(pfArray);
+
+  map.rooms.forEach((room, index) => {
+    const otherRooms = [...map.rooms];
+    otherRooms.splice(index, 1);
+    const otherDoors = flatten(otherRooms.map(otherRoom => otherRoom.doors));
+
+    room.doors.forEach(startDoor => {
+      const endDoor = otherDoors[random.integer(0, otherDoors.length)];
+
+      if (!startDoor || !endDoor) {
+        return;
+      }
+
+      const startCoordinates = CoordOps.add(startDoor.coords, getAddCoords(startDoor.side));
+      const endCoordinates = CoordOps.add(endDoor.coords, getAddCoords(endDoor.side));
+
+      if (startCoordinates.x < 0 || startCoordinates.x >= map.width
+          || startCoordinates.y < 0 || startCoordinates.y >= map.height
+          || endCoordinates.x < 0 || endCoordinates.x >= map.width
+          || endCoordinates.y < 0 || endCoordinates.y >= map.height) {
+        return;  
+      }
+
+      const startNode = pfGrid.getNodeAt(startCoordinates.x, startCoordinates.y);
+      const endNode = pfGrid.getNodeAt(endCoordinates.x, endCoordinates.y);
+
+      if (!startNode || !endNode || !startNode.walkable || !endNode.walkable) {
+        return;
+      }
+
+      const clonedGrid = pfGrid.clone();
+
+      const path = pathfinder.findPath(
+        startCoordinates.x,
+        startCoordinates.y,
+        endCoordinates.x,
+        endCoordinates.y,
+        clonedGrid,
+      );
+
+      const corridor: ICoords[] = [];
+
+      for (let i = 0; i < path.length; i++) {
+        const [x, y] = path[i];
+        const elementCoords = { x, y };
+        const coordsToCheck = [
+          CoordOps.add(elementCoords, cardinalCoords.north),
+          CoordOps.add(elementCoords, cardinalCoords.east),
+          CoordOps.add(elementCoords, cardinalCoords.south),
+          CoordOps.add(elementCoords, cardinalCoords.west),
+        ];
+        
+        let breakCheck = false;
+
+        coordsToCheck.forEach(coordToCheck => {
+          if (corridors.find(corridor => corridor.find(corridorElement =>
+            corridorElement.x === coordToCheck.x && corridorElement.y === coordToCheck.y
+          ))) {
+            breakCheck = true;
+          }
+        });
+
+        corridor.push(elementCoords);
+
+        if (breakCheck) {
+          break;
+        }
+      }
+
+      corridors.push(corridor);
+    });
+  });
+
+  return corridors;
+};
 
 export const getMaxDistanceNW = (room: Room, side: Side): number => {
   if ([Side.North, Side.South].includes(side)) {
@@ -103,9 +219,15 @@ export const generateRandomMap = ({
     nRooms,
   });
 
-  return new Map({
+  const map = new Map({
     rooms,
     width: mapWidth,
     height: mapHeight,
   });
+
+  const corridors = generateCorridors(map);
+
+  map.corridors = corridors;
+
+  return map;
 };
