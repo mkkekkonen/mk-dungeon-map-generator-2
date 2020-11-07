@@ -239,6 +239,6 @@ export const loadTiledMap = async (xml: string): Promise<ITiledMap | undefined> 
 
     return map;
   } catch(e) {
-    console.log(`Invalid map data: ${e.message}`);
+    console.log(`Error parsing map data: ${e.message}`);
   }
 };

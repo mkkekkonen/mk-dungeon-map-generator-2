@@ -1,3 +1,4 @@
 import * as TiledLoader from './loadTiled';
+import * as TiledRoomLoader from './loadTiledRoomsDoors';
 
-export { TiledLoader };
+export { TiledLoader, TiledRoomLoader };

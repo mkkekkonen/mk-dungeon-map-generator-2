@@ -27,6 +27,22 @@ export class Room {
     return { x, y };
   }
 
+  get top(): number {
+    return this.topLeft.y;
+  }
+
+  get bottom(): number {
+    return this.bottomRight.y;
+  }
+
+  get left(): number {
+    return this.topLeft.x;
+  }
+
+  get right(): number {
+    return this.bottomRight.x;
+  }
+
   overlapsWith = (otherRoom: Room): boolean => {
     if (this.topLeft.x > otherRoom.bottomRight.x
         || otherRoom.topLeft.x > this.bottomRight.x) {
@@ -40,4 +56,9 @@ export class Room {
 
     return true;
   }
+
+  contains = (coords: ICoords): boolean => (
+    coords.x >= this.left && coords.x <= this.right
+      && coords.y >= this.top && coords.y <= this.bottom
+  )
 }

@@ -43,25 +43,29 @@ export class Map {
       // N wall
       for (let x = room.topLeft.x; x <= room.bottomRight.x; x++) {
         const key = getMapCoordsKey(x, room.topLeft.y);
-        roomMapCoords[key] = WALL;
+        if (!roomMapCoords[key])
+          roomMapCoords[key] = WALL;
       }
 
       // E wall
       for (let y = room.topLeft.y + 1; y <= room.bottomRight.y - 1; y++) {
         const key = getMapCoordsKey(room.bottomRight.x, y);
-        roomMapCoords[key] = WALL;
+        if (!roomMapCoords[key])
+          roomMapCoords[key] = WALL;
       }
 
       // S wall
       for (let x = room.topLeft.x; x <= room.bottomRight.x; x++) {
         const key = getMapCoordsKey(x, room.bottomRight.y);
-        roomMapCoords[key] = WALL;
+        if (!roomMapCoords[key])
+          roomMapCoords[key] = WALL;
       }
 
       // W wall
       for (let y = room.topLeft.y + 1; y <= room.bottomRight.y - 1; y++) {
         const key = getMapCoordsKey(room.topLeft.x, y);
-        roomMapCoords[key] = WALL;
+        if (!roomMapCoords[key])
+          roomMapCoords[key] = WALL;
       }
 
       room.doors.forEach(door => {
